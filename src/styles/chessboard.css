@@ -1,0 +1,113 @@
+/* Container: two columns (left: board/timers, right: move history) */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* Chessboard section with relative positioning for timers */
+.chessboard-section {
+  position: relative;
+}
+
+/* Timer common styles */
+.chessboard-section .timer {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+/* Black timer positioned above the board */
+.black-timer {
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* White timer positioned below the board */
+.white-timer {
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Move history section on the right */
+.move-history-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 500px;
+  gap: 260px;
+}
+
+.move-history {
+  height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  background-color: #f4f4f4;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 5px;
+  text-align: left;
+}
+
+th {
+  background-color: #eee;
+}
+.chat-container {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  background-color: #fff;
+  margin-top: 20px;
+}
+
+.chat-container h3 {
+  margin-top: 0;
+}
+
+.chat-messages {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  border: 1px solid #eee;
+  padding: 5px;
+}
+
+.chat-message {
+  margin-bottom: 5px;
+}
+
+.chat-input {
+  display: flex;
+  gap: 5px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.chat-input button {
+  padding: 5px 10px;
+  border: none;
+  background-color: #769656;
+  color: #fff;
+  border-radius: 3px;
+  cursor: pointer;
+}
