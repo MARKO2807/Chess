@@ -4,30 +4,6 @@ import { useNavigate } from "react-router-dom";
 // DUMMY DATA
 const dummyPlayersData = [
   {
-    uid: "user1",
-    nickname: "PlayerOne",
-    age: 25,
-    email: "playerone@example.com",
-    rating: 1500,
-    score: { wins: 10, losses: 5, draws: 2 },
-  },
-  {
-    uid: "user2",
-    nickname: "PlayerTwo",
-    age: 30,
-    email: "playertwo@example.com",
-    rating: 1600,
-    score: { wins: 15, losses: 3, draws: 1 },
-  },
-  {
-    uid: "user3",
-    nickname: "PlayerThree",
-    age: 20,
-    email: "playerthree@example.com",
-    rating: 1400,
-    score: { wins: 8, losses: 6, draws: 4 },
-  },
-  {
     uid: "user4",
     nickname: "JohnDoe",
     age: 28,
@@ -247,7 +223,8 @@ const dummyPlayersData = [
 
 const Lobby = ({ playersData = dummyPlayersData }) => {
   const navigate = useNavigate();
-  const [players, setPlayers] = useState(playersData);
+  const [players, setPlayers] = useState(playersData); // Real data in future...
+  const [loading, setLoading] = useState(true);
   const [filteredData, setFilteredData] = useState(playersData);
   const [sortConfig, setSortConfig] = useState({
     key: null,
@@ -255,12 +232,12 @@ const Lobby = ({ playersData = dummyPlayersData }) => {
   });
   const [filterTerm, setFilterTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 8;
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
-  const [selectedTimeControl, setSelectedTimeControl] = useState(null);
+  const [selectedTimeControl, setSelectedTimeControl] = useState("5+0");
 
   // Open modal
   const openModal = (player) => {
@@ -299,19 +276,13 @@ const Lobby = ({ playersData = dummyPlayersData }) => {
     // Sorting logic
     if (sortConfig.key) {
       data.sort((a, b) => {
-        let aValue = a[sortConfig.key];
-        let bValue = b[sortConfig.key];
-
-        if (sortConfig.key === "wins") {
-          aValue = a.score.wins;
-          bValue = b.score.wins;
-        } else if (sortConfig.key === "losses") {
-          aValue = a.score.losses;
-          bValue = b.score.losses;
-        } else if (sortConfig.key === "draws") {
-          aValue = a.score.draws;
-          bValue = b.score.draws;
-        }
+        const nestedKeys = ["wins", "losses", "draws"];
+        let aValue = nestedKeys.includes(sortConfig.key)
+          ? a.score[sortConfig.key]
+          : a[sortConfig.key];
+        let bValue = nestedKeys.includes(sortConfig.key)
+          ? b.score[sortConfig.key]
+          : b[sortConfig.key];
 
         if (aValue < bValue) {
           return sortConfig.direction === "ascending" ? -1 : 1;

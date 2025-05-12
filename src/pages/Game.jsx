@@ -16,6 +16,7 @@ const Game = () => {
   const [illegalMove, setIllegalMove] = useState(false);
   const [suggestedMove, setSuggestedMove] = useState(null);
   const [evalScore, setEvalScore] = useState(null);
+  const [searchDepth, setSearchDepth] = useState(18);
   const engineRef = useRef(null);
 
   const selectedTimeControl = "5+0";
@@ -28,13 +29,20 @@ const Game = () => {
 
   // Timer effect
   useEffect(() => {
+    if (status !== "In Progress") return;
     const timerId = setInterval(() => {
-      if (status !== "In Progress") return;
       if (game.turn() === "w") setWhiteTime((prev) => Math.max(prev - 1, 0));
       else setBlackTime((prev) => Math.max(prev - 1, 0));
     }, 1000);
     return () => clearInterval(timerId);
-  }, [status]);
+  }, [status, game]);
+
+  // End game on timeout
+  useEffect(() => {
+    if (whiteTime === 0 || blackTime === 0) {
+      setStatus("Time Over");
+    }
+  }, [whiteTime, blackTime]);
 
   // Initialize engine
   useEffect(() => {
@@ -42,19 +50,33 @@ const Game = () => {
     engineRef.current = engine;
 
     engine.onmessage = ({ data }) => {
-      if (data.startsWith("uciok")) engine.postMessage("isready");
-      else if (data.startsWith("readyok")) askSuggestion();
-      else if (data.startsWith("info")) {
-        // Parse score
-        const parts = data.split(" ");
-        const scoreIndex = parts.indexOf("score");
-        if (scoreIndex !== -1 && parts.length > scoreIndex + 2) {
-          const type = parts[scoreIndex + 1];
-          const value = parseInt(parts[scoreIndex + 2], 10);
+      const parts = data.split(" ");
+
+      if (data.startsWith("uciok")) {
+        engine.postMessage("isready");
+        return;
+      }
+      if (data.startsWith("readyok")) {
+        postPositionAndGo();
+        return;
+      }
+
+      if (data.startsWith("info")) {
+        const dIdx = parts.indexOf("depth");
+        const depth = dIdx > -1 ? parseInt(parts[dIdx + 1], 10) : null;
+        if (depth !== searchDepth) return;
+
+        const sIdx = parts.indexOf("score");
+        if (sIdx > -1 && parts.length > sIdx + 2) {
+          const type = parts[sIdx + 1];
+          const value = parseInt(parts[sIdx + 2], 10);
           if (type === "cp") setEvalScore((value / 100).toFixed(2));
           else if (type === "mate") setEvalScore("#" + value);
         }
-      } else if (data.startsWith("bestmove")) {
+        return;
+      }
+
+      if (data.startsWith("bestmove")) {
         const move = data.split(" ")[1];
         if (move && move !== "(none)")
           setSuggestedMove(formatSuggestedMove(move));
@@ -63,21 +85,20 @@ const Game = () => {
 
     engine.postMessage("uci");
     return () => engine.terminate();
-  }, []);
+  }, [searchDepth]);
 
-  // Re-ask on fen change
-  useEffect(() => {
-    if (engineRef.current) askSuggestion();
-  }, [fen]);
-
-  const askSuggestion = (depth = 10) => {
+  // Send position & go command
+  const postPositionAndGo = () => {
     const engine = engineRef.current;
     if (!engine) return;
-    setSuggestedMove(null);
     setEvalScore(null);
+    setSuggestedMove(null);
     engine.postMessage(`position fen ${fen}`);
-    engine.postMessage(`go depth ${depth}`);
+    engine.postMessage(`go depth ${searchDepth}`);
   };
+
+  // Re-query engine on FEN change
+  useEffect(postPositionAndGo, [fen]);
 
   const formatSuggestedMove = (move) => {
     const from = move.slice(0, 2);
@@ -93,27 +114,25 @@ const Game = () => {
       Q: "Queen",
       K: "King",
     };
-    let text = `${names[type] || "Piece"} from ${from} to ${to}`;
-    if (promotion)
-      text += ` promoting to ${names[promotion.toUpperCase()] || "Piece"}`;
+    let text = `${names[type]} from ${from} to ${to}`;
+    if (promotion) text += ` promoting to ${names[promotion.toUpperCase()]}`;
     return text;
   };
 
   const handleMove = (source, target) => {
     if (status !== "In Progress") return false;
-    let move;
-    try {
-      move = game.move({ from: source, to: target, promotion: "q" });
-    } catch {
+    const moves = game.moves({ square: source, verbose: true });
+    const legal = moves.some((m) => m.to === target);
+    if (!legal) {
       setIllegalMove(true);
       setTimeout(() => setIllegalMove(false), 300);
       return false;
     }
+    const move = game.move({ from: source, to: target, promotion: "q" });
     if (move) {
       setFen(game.fen());
       setHistory(game.history({ verbose: true }));
       setLastMove(move);
-      setIllegalMove(false);
       if (game.isGameOver()) setStatus("Game Over");
       return true;
     }

@@ -16,7 +16,6 @@ const SoundEffects = ({ move, game, illegalMove }) => {
     gameStartSound.play();
   }, []);
 
-  // Separate effect to play the illegal move sound.
   useEffect(() => {
     if (illegalMove) {
       const illegalMoveSound = new Howl({ src: [illegalMoveSoundFile] });
@@ -24,9 +23,7 @@ const SoundEffects = ({ move, game, illegalMove }) => {
     }
   }, [illegalMove]);
 
-  // Effect for handling legal move sound effects.
   useEffect(() => {
-    // If there is no move (i.e. move is null), don't play any sound.
     if (!move) return;
 
     // Initialize sound objects.
@@ -36,11 +33,10 @@ const SoundEffects = ({ move, game, illegalMove }) => {
     const checkSound = new Howl({ src: [checkSoundFile] });
     const promoteSound = new Howl({ src: [promoteSoundFile] });
     const gameOverSound = new Howl({ src: [gameOverSoundFile] });
-    // If you plan on using these sounds later, initialize them here as needed.
-    // const notificationSound = new Howl({ src: [notificationSoundFile] });
-    // const tenSecondWarningSound = new Howl({ src: [tenSecondWarningSoundFile] });
+    // const notificationSound = new Howl({ src: [notificationSoundFile] }); => used for chat, in different file
+    // const tenSecondWarningSound = new Howl({ src: [tenSecondWarningSoundFile] }); might be implemented later
 
-    // Play sounds based on move flags:
+    // Play sounds based on move flags (from chess.js)
     if (game.isGameOver()) {
       gameOverSound.play();
     }

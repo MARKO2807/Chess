@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 
-// Custom hook to track the previous value of a prop or state
 function usePrevious(value) {
   const ref = useRef();
   useEffect(() => {
@@ -10,18 +9,14 @@ function usePrevious(value) {
 }
 
 const ChessClock = ({ timeControl, activePlayer, onTimeUp }) => {
-  // Parse timeControl string: e.g., "10+5" gives initialMinutes = 10, incrementSeconds = 5
   const [initialMinutes, incrementSeconds] = timeControl.split("+").map(Number);
-  const initialTime = initialMinutes * 60; // Convert minutes to seconds
+  const initialTime = initialMinutes * 60;
 
-  // State for each player's remaining time
   const [whiteTime, setWhiteTime] = useState(initialTime);
   const [blackTime, setBlackTime] = useState(initialTime);
 
-  // Track previous active player so we know who just finished their move
   const prevActivePlayer = usePrevious(activePlayer);
 
-  // When the activePlayer changes, add the increment to the player who just moved
   useEffect(() => {
     if (prevActivePlayer) {
       if (prevActivePlayer === "white") {
@@ -30,10 +25,8 @@ const ChessClock = ({ timeControl, activePlayer, onTimeUp }) => {
         setBlackTime((prev) => prev + incrementSeconds);
       }
     }
-    // We intentionally want to run this effect whenever activePlayer changes.
   }, [activePlayer, incrementSeconds, prevActivePlayer]);
 
-  // Timer effect: run only for the active player's clock
   useEffect(() => {
     let timerId;
     if (activePlayer === "white") {
@@ -62,7 +55,6 @@ const ChessClock = ({ timeControl, activePlayer, onTimeUp }) => {
     return () => clearInterval(timerId);
   }, [activePlayer, onTimeUp]);
 
-  // Helper to format time (mm:ss)
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;

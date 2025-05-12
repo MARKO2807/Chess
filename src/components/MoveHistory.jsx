@@ -1,7 +1,7 @@
 import React from "react";
 
 const MoveHistory = ({ moves }) => {
-  // Group moves into pairs (one white move and one black move per full move)
+  // Each pair contains a white move and a black move
   const movePairs = [];
   for (let i = 0; i < moves.length; i += 2) {
     movePairs.push({

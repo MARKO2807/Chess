@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 const Buttons = ({ onResign, onDraw, disabled }) => {
-  const [pendingAction, setPendingAction] = useState(null); // "resign" or "draw"
+  const [pendingAction, setPendingAction] = useState(null);
 
   const handleActionClick = (action) => {
     setPendingAction(action);
